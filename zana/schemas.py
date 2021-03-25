@@ -14,6 +14,7 @@ class ZealIdentifierCreate(ZealIdentifierBase):
 class ZealIdentifier(ZealIdentifierBase):
     assigned_to: Optional[str] = None
     is_assigned: Optional[bool] = False
+    prefix: Optional[str] = None
     assigned_on: Optional[datetime.datetime] = None
     created_on: datetime.datetime
 
@@ -23,4 +24,5 @@ class ZealIdentifier(ZealIdentifierBase):
 class ZealAssignmentRequest(BaseModel):
     n: int
     org_code: str
+    prefix: str
 

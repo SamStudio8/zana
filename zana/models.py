@@ -10,6 +10,7 @@ class ZealIdentifier(Base):
     is_assigned = Column(Boolean, default=False)
     assigned_to = Column(String)
     assigned_on = Column(DateTime)
+    prefix = Column(String, index=True)
     created_on = Column(DateTime)
 
 

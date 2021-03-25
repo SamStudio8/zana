@@ -28,8 +28,8 @@ def detail_identifier(zeal: str, db: Session = Depends(get_db)):
     return crud.get_identifier(db=db, zeal=zeal)
 
 @app.get("/zeal/", response_model=List[schemas.ZealIdentifier])
-def list_identifiers(db: Session = Depends(get_db), org_code: str = None):
-    return crud.list_identifier(db=db, org_code=org_code)
+def list_identifiers(db: Session = Depends(get_db), org_code: str = None, prefix: str = None):
+    return crud.list_identifiers(db=db, org_code=org_code, prefix=prefix)
 
 @app.post("/issue/", response_model=List[schemas.ZealIdentifier])
 def assign_identifiers(request: schemas.ZealAssignmentRequest, db: Session = Depends(get_db)):

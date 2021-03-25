@@ -15,10 +15,12 @@ def create_identifier(db: Session, zeal: schemas.ZealIdentifierCreate):
     db.refresh(zeal_obj)
     return zeal_obj
 
-def list_identifier(db: Session, org_code: str = None):
+def list_identifiers(db: Session, org_code: str = None, prefix: str = None):
     qs = db.query(models.ZealIdentifier).filter(models.ZealIdentifier.is_assigned == True)
     if org_code:
         qs = qs.filter(models.ZealIdentifier.assigned_to == org_code)
+    if prefix:
+        qs = qs.filter(models.ZealIdentifier.prefix == prefix)
     return qs.all()
 
 def get_identifier(db: Session, zeal: str):
@@ -72,6 +74,7 @@ def assign_identifiers(db: Session, request: schemas.ZealAssignmentRequest):
         if zeal:
             zeal.is_assigned = True
             zeal.assigned_to = request.org_code
+            zeal.prefix = request.prefix
             zeal.assigned_on = datetime.utcnow()
 
             db.add(zeal)
