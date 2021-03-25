@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
+from typing import List
 
 from zana import crud, models, schemas
 from zana.database import SessionLocal, engine
@@ -25,3 +26,7 @@ def create_identifier(zeal: schemas.ZealIdentifierCreate, db: Session = Depends(
 @app.get("/zeal/{zeal}", response_model=schemas.ZealIdentifier)
 def get_identifier(zeal: str, db: Session = Depends(get_db)):
     return crud.get_identifier(db=db, zeal=zeal)
+
+@app.post("/issue/", response_model=List[schemas.ZealIdentifier])
+def assign_identifiers(request: schemas.ZealAssignmentRequest, db: Session = Depends(get_db)):
+    return crud.assign_identifiers(db=db, request=request)
