@@ -12,3 +12,11 @@ class ZealIdentifier(Base):
     assigned_on = Column(DateTime)
     created_on = Column(DateTime)
 
+
+#class ZealRequest(Base):
+#    __tablename__ = "zealrequest"
+#
+#    n_requested = Column(Integer)
+#    n_assigned = Column(Integer)
+#    assigned_to = Column(String)
+#    assigned_on = Column(DateTime)

@@ -15,8 +15,15 @@ def create_identifier(db: Session, zeal: schemas.ZealIdentifierCreate):
     db.refresh(zeal_obj)
     return zeal_obj
 
+def list_identifier(db: Session, org_code: str = None):
+    qs = db.query(models.ZealIdentifier).filter(models.ZealIdentifier.is_assigned == True)
+    if org_code:
+        qs = qs.filter(models.ZealIdentifier.assigned_to == org_code)
+    return qs.all()
+
 def get_identifier(db: Session, zeal: str):
-    return db.query(models.ZealIdentifier).filter(models.ZealIdentifier.zeal == zeal).first()
+    qs = db.query(models.ZealIdentifier).filter(models.ZealIdentifier.is_assigned == True, models.ZealIdentifier.zeal == zeal)
+    return qs.first()
 
 def _open_zeal_lock(zeal_id):
     fl = open('/tmp/%s' % zeal_id, 'w')
