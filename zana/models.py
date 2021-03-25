@@ -6,7 +6,9 @@ class ZealIdentifier(Base):
     __tablename__ = "zealidentifier"
 
     zeal = Column(String, primary_key=True, index=True)
+    version = Column(Integer, default=0)
     is_assigned = Column(Boolean, default=False)
     assigned_to = Column(String)
     assigned_on = Column(DateTime)
+    created_on = Column(DateTime)
 

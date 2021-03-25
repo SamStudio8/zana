@@ -7,6 +7,7 @@ from . import models, schemas
 
 def create_identifier(db: Session, zeal: schemas.ZealIdentifierCreate):
     zeal_obj = models.ZealIdentifier(**zeal.dict())
+    zeal_obj.created_on = datetime.utcnow()
     db.add(zeal_obj)
     db.commit()
     db.refresh(zeal_obj)
