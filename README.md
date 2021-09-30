@@ -10,7 +10,7 @@ pip install fastapi[all] uvicorn SQLAlchemy alembic
 
 #### Database
 
-* `cp alembic.ini.example alembic.ini` and update sqlalchemy url
+* `cp alembic.ini.example alembic.ini`
 * `PYTHONPATH=. alembic upgrade head`
 
 #### Development
