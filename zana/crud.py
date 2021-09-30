@@ -54,7 +54,7 @@ def _get_next_free_zeal(db, pool, remaining_attempts=3):
     fl = _open_zeal_lock(zeal.zeal)
 
     if not zeal and fl:
-        return _get_next_free_zeal(db, remaining_attempts-1)
+        return _get_next_free_zeal(db, pool, remaining_attempts-1)
     return zeal, fl
 
 
@@ -66,7 +66,7 @@ def assign_identifier(db: Session, request: schemas.ZealLinkageAssignmentRequest
             return z
 
     # Return the next un-used Zeal and open a lock on it
-    zeal, fl = _get_next_free_zeal(db)
+    zeal, fl = _get_next_free_zeal(db, request.pool)
 
     if zeal:
         zeal.is_assigned = True
