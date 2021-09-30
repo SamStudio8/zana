@@ -15,10 +15,10 @@ pip install fastapi[all] uvicorn SQLAlchemy alembic
 
 #### Development
 
-* `PYTHONPATH=. alembic revision --autogenerate`
+* `PYTHONPATH=. alembic revision --autogenerate -m "comment"`
 
 #### Ship it
 
 ```
-uvicorn main:app --reload
+uvicorn main:app --reload --port $ZANA_PORT
 ```

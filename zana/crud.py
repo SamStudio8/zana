@@ -15,16 +15,12 @@ def create_identifier(db: Session, zeal: schemas.ZealIdentifierCreate):
     db.refresh(zeal_obj)
     return zeal_obj
 
-def list_identifiers(db: Session, org_code: str = None, prefix: str = None):
-    qs = db.query(models.ZealIdentifier).filter(models.ZealIdentifier.is_assigned == True)
-    if org_code:
-        qs = qs.filter(models.ZealIdentifier.assigned_to == org_code)
-    if prefix:
-        qs = qs.filter(models.ZealIdentifier.prefix == prefix)
-    return qs.all()
-
 def get_identifier(db: Session, zeal: str):
     qs = db.query(models.ZealIdentifier).filter(models.ZealIdentifier.is_assigned == True, models.ZealIdentifier.zeal == zeal)
+    return qs.first()
+
+def get_identifier_from_linkage(db: Session, linkage_id: str):
+    qs = db.query(models.ZealIdentifier).filter(models.ZealIdentifier.is_assigned == True, models.ZealIdentifier.linkage_id == linkage_id)
     return qs.first()
 
 def _open_zeal_lock(zeal_id):
@@ -44,13 +40,13 @@ def _close_zeal_lock(fl):
 # to more than one site, a temporary file lock is opened in tmp/ while the update
 # operation is in progress - preventing the already unlikely scenario that a random
 # free Zeal is grabbed between another process grabbing but not finishing the update
-def _get_next_free_zeal(db, remaining_attempts=3):
+def _get_next_free_zeal(db, pool, remaining_attempts=3):
     if remaining_attempts == 0:
         # Prevent looping forever to retry flocks
         return None, None
 
     # Use func.random to grab random result https://stackoverflow.com/a/60815
-    zeal = db.query(models.ZealIdentifier).filter(models.ZealIdentifier.is_assigned == False).order_by(func.random()).first()
+    zeal = db.query(models.ZealIdentifier).filter(models.ZealIdentifier.pool == pool, models.ZealIdentifier.is_assigned == False).order_by(func.random()).first()
     if not zeal:
         # Likely depleted
         return None, None
@@ -62,26 +58,28 @@ def _get_next_free_zeal(db, remaining_attempts=3):
     return zeal, fl
 
 
-def assign_identifiers(db: Session, request: schemas.ZealAssignmentRequest):
-    # TODO What to do when the pool is exhausted? Currently this will just return however many is left if < n
+def assign_identifier(db: Session, request: schemas.ZealLinkageAssignmentRequest):
+    # Check for assignment and reply
+    if request.linkage_id:
+        z = get_identifier_from_linkage(db, request.linkage_id)
+        if z:
+            return z
 
-    zeals = []
-    for i in range(request.n):
+    # Return the next un-used Zeal and open a lock on it
+    zeal, fl = _get_next_free_zeal(db)
 
-        # Return the next un-used Zeal and open a lock on it
-        zeal, fl = _get_next_free_zeal(db)
+    if zeal:
+        zeal.is_assigned = True
+        zeal.linkage_id = request.linkage_id
+        zeal.assigned_to = request.org_code
+        zeal.prefix = request.prefix
+        zeal.assigned_on = datetime.utcnow()
 
-        if zeal:
-            zeal.is_assigned = True
-            zeal.assigned_to = request.org_code
-            zeal.prefix = request.prefix
-            zeal.assigned_on = datetime.utcnow()
+        db.add(zeal)
+        db.commit()
+        db.refresh(zeal)
 
-            db.add(zeal)
-            db.commit()
-            db.refresh(zeal)
+    if fl:
+        _close_zeal_lock(fl)
 
-            zeals.append(zeal)
-
-            _close_zeal_lock(fl)
-    return zeals
+    return zeal

@@ -12,12 +12,6 @@ class ZealIdentifier(Base):
     assigned_on = Column(DateTime)
     prefix = Column(String, index=True)
     created_on = Column(DateTime)
+    linkage_id = Column(String)
+    pool = Column(String)
 
-
-#class ZealRequest(Base):
-#    __tablename__ = "zealrequest"
-#
-#    n_requested = Column(Integer)
-#    n_assigned = Column(Integer)
-#    assigned_to = Column(String)
-#    assigned_on = Column(DateTime)

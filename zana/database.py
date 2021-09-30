@@ -5,7 +5,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # Using sqlite for portability and fast mvp
-SQLALCHEMY_DATABASE_URL = os.getenv("ZANA_DATABASE_URL")
+db_url = os.getenv("ZANA_DATABASE_URL")
+if not db_url:
+    raise Exception("ZANA_DATABASE_URL undefined")
+SQLALCHEMY_DATABASE_URL = db_url
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
