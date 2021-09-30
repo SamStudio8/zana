@@ -35,7 +35,9 @@ script_location = alembic
 # are written from script.py.mako
 # output_encoding = utf-8
 
-sqlalchemy.url = driver://user:pass@localhost/dbname
+#sqlalchemy.url = driver://user:pass@localhost/dbname
+# Leave blank and define ZANA_DATABASE_URL
+sqlalchemy.url = 
 
 
 [post_write_hooks]
