@@ -28,9 +28,6 @@ setuptools.setup(
     install_requires=requirements,
 
     entry_points = {
-        'console_scripts': [
-            'foel = foel.client:cli',
-        ]
     },
 
     test_suite="tests",
