@@ -1,6 +1,7 @@
 import pytest
 import os
 import datetime
+import asyncio
 
 # Turn on test database in ZanaEngineSession
 os.environ["ZANA_TEST"] = '1'
@@ -194,7 +195,6 @@ async def test_issue_with_linkage(test_app, test_client):
     assert reply["version"] == 1
     assert reply["zeal"] == "HOOT-12345"
 
-import asyncio
 
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("clear_test_data")
@@ -202,18 +202,78 @@ async def test_issue_two_requests(test_app, test_client):
     res = await test_client.post(test_app.url_path_for("add_identifier"), json={"zeal": "HOOT-12345", "pool": "TEST"})
 
     t1 = asyncio.create_task(test_client.post(test_app.url_path_for("issue_identifier"), json={
-        "org_code": "HOOT",
+        "org_code": "HOOT1",
         "prefix": "TEST",
         "pool": "TEST",
+        "linkage_id": 1,
     }))
     t2 = asyncio.create_task(test_client.post(test_app.url_path_for("issue_identifier"), json={
-        "org_code": "HOOT",
+        "org_code": "HOOT2",
         "prefix": "TEST",
         "pool": "TEST",
+        "linkage_id": 2,
     }))
     await t1
     await t2
     codes = [t1.result().status_code, t2.result().status_code]
     assert 201 in codes
     assert 507 in codes
+
+    replies = [t1.result().json(), t2.result().json()]
+
+    if len(replies[0]) > len(replies[1]):
+        one_won = True
+        bad, good = replies[1], replies[0]
+    else:
+        one_won = False
+        bad, good = replies[0], replies[1]
+
+    assert bad == {"message": "out of zeal"}
+
+    if one_won:
+        assert good["linkage_id"] == "1"
+        assert good["assigned_to"] == "HOOT1"
+    else:
+        assert good["linkage_id"] == "2"
+        assert good["assigned_to"] == "HOOT2"
+
+    assert good["prefix"] == "TEST"
+    assert good["zeal"] == "HOOT-12345"
+
+
+@pytest.mark.asyncio
+@pytest.mark.usefixtures("clear_test_data")
+async def test_issue_two_requests(test_app, test_client):
+    res = await test_client.post(test_app.url_path_for("add_identifier"), json={"zeal": "HOOT-12345", "pool": "TEST"})
+    res = await test_client.post(test_app.url_path_for("add_identifier"), json={"zeal": "HOOT-67890", "pool": "TEST"})
+
+    t1 = asyncio.create_task(test_client.post(test_app.url_path_for("issue_identifier"), json={
+        "org_code": "HOOT1",
+        "prefix": "TEST",
+        "pool": "TEST",
+        "linkage_id": 1,
+    }))
+    t2 = asyncio.create_task(test_client.post(test_app.url_path_for("issue_identifier"), json={
+        "org_code": "HOOT2",
+        "prefix": "TEST",
+        "pool": "TEST",
+        "linkage_id": 2,
+    }))
+    await t1
+    await t2
+    codes = [t1.result().status_code, t2.result().status_code]
+    assert codes == [201, 201]
+
+    replies = [t1.result().json(), t2.result().json()]
+    assert {"message": "out of zeal"} not in replies
+
+    assert replies[0]["assigned_to"] == "HOOT1"
+    assert replies[0]["linkage_id"] == "1"
+    assert replies[1]["assigned_to"] == "HOOT2"
+    assert replies[1]["linkage_id"] == "2"
+
+    if replies[0]["zeal"] == "HOOT-12345":
+        assert replies[1]["zeal"] == "HOOT-67890"
+    elif replies[0]["zeal"] == "HOOT-67890":
+        assert replies[1]["zeal"] == "HOOT-12345"
 

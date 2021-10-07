@@ -3,6 +3,7 @@ from sqlalchemy import func # https://stackoverflow.com/a/4086229/2576437
 from sqlalchemy import exc
 
 from datetime import datetime
+import os
 import time
 
 from . import models, schemas
@@ -48,6 +49,9 @@ def assign_identifier(db: Session, request: schemas.ZealLinkageAssignmentRequest
                     zeal.assigned_to = request.org_code
                     zeal.prefix = request.prefix
                     zeal.assigned_on = datetime.utcnow()
+                    if os.getenv("ZANA_TEST"):
+                        # Go for a nap
+                        time.sleep(2)
                     db.add(zeal)
                 else:
                     # Abort early, we are out of zeal pal
@@ -55,6 +59,7 @@ def assign_identifier(db: Session, request: schemas.ZealLinkageAssignmentRequest
         except exc.OperationalError:
             # Database was probably locked
             # null the returned zeal
+            # You must set this to None to prevent the locked zeal being returned
             zeal = None
 
         attempts -= 1
