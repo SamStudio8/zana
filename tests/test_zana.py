@@ -165,7 +165,7 @@ async def test_issue_out_of_zeal_pool(test_app, test_client):
 
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("clear_test_data")
-async def test_issue_with_linkage(test_app, test_client):
+async def test_issue_with_pooled_linkage(test_app, test_client):
     res = await test_client.post(test_app.url_path_for("add_identifier"), json={"zeal": "HOOT-12345", "pool": "TEST"})
     res = await test_client.post(test_app.url_path_for("issue_identifier"), json={
         "org_code": "HOOT",
@@ -195,6 +195,58 @@ async def test_issue_with_linkage(test_app, test_client):
     assert reply["version"] == 1
     assert reply["zeal"] == "HOOT-12345"
 
+@pytest.mark.asyncio
+@pytest.mark.usefixtures("clear_test_data")
+async def test_issue_with_unpooled_linkage(test_app, test_client):
+    res = await test_client.post(test_app.url_path_for("add_identifier"), json={"zeal": "HOOT-12345-A", "pool": "TESTA"})
+    res = await test_client.post(test_app.url_path_for("add_identifier"), json={"zeal": "HOOT-12345-B", "pool": "TESTB"})
+    res = await test_client.post(test_app.url_path_for("issue_identifier"), json={
+        "org_code": "HOOT",
+        "prefix": "MEOW",
+        "pool": "TESTA",
+        "linkage_id": "12345",
+    })
+    assert res.status_code == 201
+    reply = res.json()
+    assert reply["zeal"] == "HOOT-12345-A"
+    assert reply["pool"] == "TESTA"
+
+    # Make second request for issue
+    res = await test_client.post(test_app.url_path_for("issue_identifier"), json={
+        "org_code": "HOOT",
+        "prefix": "MEOW",
+        "pool": "TESTB",
+        "linkage_id": "12345",
+    })
+    assert res.status_code == 201 # should create a new linkage
+    reply = res.json()
+    assert reply["zeal"] == "HOOT-12345-B"
+    assert reply["pool"] == "TESTB"
+
+
+@pytest.mark.asyncio
+@pytest.mark.usefixtures("clear_test_data")
+async def test_issue_with_unpooled_linkage_and_empty_pool(test_app, test_client):
+    res = await test_client.post(test_app.url_path_for("add_identifier"), json={"zeal": "HOOT-12345-A", "pool": "TESTA"})
+    res = await test_client.post(test_app.url_path_for("issue_identifier"), json={
+        "org_code": "HOOT",
+        "prefix": "MEOW",
+        "pool": "TESTA",
+        "linkage_id": "12345",
+    })
+    assert res.status_code == 201
+    reply = res.json()
+    assert reply["zeal"] == "HOOT-12345-A"
+    assert reply["pool"] == "TESTA"
+
+    # Make second request for issue
+    res = await test_client.post(test_app.url_path_for("issue_identifier"), json={
+        "org_code": "HOOT",
+        "prefix": "MEOW",
+        "pool": "TESTB",
+        "linkage_id": "12345",
+    })
+    assert res.status_code == 507 # should fail to make new linkage as the pool is depleted
 
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("clear_test_data")

@@ -32,7 +32,7 @@ def issue_identifier(request: schemas.ZealLinkageAssignmentRequest, response: Re
 
     # Check for assignment and reply
     if request.linkage_id:
-        zeal = crud.get_identifier_from_linkage(db, request.linkage_id)
+        zeal = crud.get_identifier_from_linkage(db, request.linkage_id, request.pool)
         if zeal:
             response.status_code = 200
             return zeal

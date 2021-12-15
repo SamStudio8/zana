@@ -24,9 +24,9 @@ def get_identifier(db: Session, zeal: str):
         qs = db.query(models.ZealIdentifier).filter(models.ZealIdentifier.is_assigned == True, models.ZealIdentifier.zeal == zeal)
     return qs.first()
 
-def get_identifier_from_linkage(db: Session, linkage_id: str):
+def get_identifier_from_linkage(db: Session, linkage_id: str, pool: str):
     with db.begin():
-        qs = db.query(models.ZealIdentifier).filter(models.ZealIdentifier.is_assigned == True, models.ZealIdentifier.linkage_id == linkage_id)
+        qs = db.query(models.ZealIdentifier).filter(models.ZealIdentifier.is_assigned == True, models.ZealIdentifier.linkage_id == linkage_id, models.ZealIdentifier.pool == pool)
         return qs.first()
     return None
 
