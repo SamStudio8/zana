@@ -30,6 +30,9 @@ def get_identifier_from_linkage(db: Session, linkage_id: str, pool: str):
         return qs.first()
     return None
 
+def get_size_free_zeal(db: Session, pool: str):
+    return db.query(models.ZealIdentifier).filter(models.ZealIdentifier.pool == pool, models.ZealIdentifier.is_assigned == False).count()
+
 def _get_random_free_zeal(db: Session, pool: str):
     # Use func.random to grab random result https://stackoverflow.com/a/60815
     return db.query(models.ZealIdentifier).filter(models.ZealIdentifier.pool == pool, models.ZealIdentifier.is_assigned == False).order_by(func.random()).first()

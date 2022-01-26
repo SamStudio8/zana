@@ -30,3 +30,7 @@ class ZealLinkageAssignmentRequest(BaseModel):
     pool: str
     linkage_id: Optional[str] = None
 
+
+class ZealPoolSizeRequest(BaseModel):
+    pool: str
+

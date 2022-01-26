@@ -20,14 +20,19 @@ router = APIRouter()
 def root():
     return {"message": "Hello World"}
 
-@router.post("/add/", response_model=schemas.ZealIdentifier, status_code=201)
+@router.get("/size/{pool}")
+def get_pool_size(pool: str, db: Session = Depends(get_db)):
+    return JSONResponse(content={"pool": pool, "size": crud.get_size_free_zeal(db, pool)})
+
+
+@router.post("/add", response_model=schemas.ZealIdentifier, status_code=201)
 def add_identifier(request: schemas.ZealIdentifierCreate, db: Session = Depends(get_db)):
     zeal = crud.create_identifier(db=db, zeal=request)
     if not zeal:
         return JSONResponse(status_code=409, content={"message": "duplicate zeal", "zeal": request.zeal})
     return zeal
 
-@router.post("/issue/", response_model=schemas.ZealIdentifier)
+@router.post("/issue", response_model=schemas.ZealIdentifier)
 def issue_identifier(request: schemas.ZealLinkageAssignmentRequest, response: Response, db: Session = Depends(get_db)):
 
     # Check for assignment and reply
