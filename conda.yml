@@ -1,12 +1,10 @@
 name: zana
 channels:
-    - conda-forge
-    - defaults
+  - conda-forge
+  - defaults
 dependencies:
-    - pip
-    - pip:
-        - fastapi[all]
-        - gunicorn
-        - uvicorn
-        - SQLAlchemy
-        - alembic
+  - gunicorn
+  - uvicorn
+  - fastapi
+  - SQLAlchemy
+  - alembic
