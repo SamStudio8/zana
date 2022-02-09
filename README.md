@@ -20,6 +20,7 @@ pip install fastapi[all] uvicorn SQLAlchemy alembic pytest pytest-asyncio
 #### Ship it
 
 ```
+export ZANA_DATABASE_URL=
 gunicorn --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind $ZANA_HOST:$ZANA_PORT zana.server:app
 ```
 
