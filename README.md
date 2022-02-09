@@ -20,7 +20,7 @@ pip install fastapi[all] uvicorn SQLAlchemy alembic pytest pytest-asyncio
 #### Ship it
 
 ```
-uvicorn main:app --reload --port $ZANA_PORT
+gunicorn --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind $ZANA_HOST:$ZANA_PORT zana.server:app
 ```
 
 #### Test
